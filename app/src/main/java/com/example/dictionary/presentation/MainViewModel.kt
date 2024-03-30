@@ -46,7 +46,7 @@ class MainViewModel @Inject constructor(
 
             is MainUiEvents.OnSearchWordChange -> {
                 _mainState.update {
-                    it.copy(searchWord = mainUiEvent.newWord.lowercase())
+                    it.copy(searchWord = mainUiEvent.newWord)
                 }
             }
         }

@@ -43,6 +43,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.dictionary.domain.model.Meaning
 import com.example.dictionary.domain.model.WordItem
+import com.example.dictionary.presentation.components.BarColor
+import com.example.dictionary.presentation.components.DetailsSection
+import com.example.dictionary.presentation.components.MainScreen
+import com.example.dictionary.presentation.components.PartsOfSpeech
+import com.example.dictionary.presentation.components.TopBar
+import com.example.dictionary.presentation.components.WordDetails
+import com.example.dictionary.presentation.components.WordPreview
 import com.example.dictionary.ui.theme.DictionaryTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
@@ -61,234 +68,18 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    topBar = {
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp),
-                            value = mainState.searchWord,
-                            onValueChange = {
-                                mainViewModel.onEvent(MainUiEvents.OnSearchWordChange(it))
-                            },
-                            trailingIcon = {
-                                Icon(
-                                    imageVector = Icons.Rounded.Search,
-                                    contentDescription = "Search a word",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier
-                                        .size(30.dp)
-                                        .clickable {
-                                            mainViewModel.onEvent(
-                                                MainUiEvents.OnSearchClick
-                                            )
-                                        }
-                                )
-                            },
-                            label = {
-                                Text(
-                                    text = "Search a word",
-                                    fontSize = 15.sp,
-                                    modifier = Modifier.alpha(0.7f)
-                                )
-                            },
-                            textStyle = TextStyle(
-                                color = MaterialTheme.colorScheme.onBackground,
-                                fontSize = 19.5.sp
-                            )
-                        )
-                    }
+                    topBar = { TopBar(mainState = mainState, mainViewModel = mainViewModel) }
                 ) {paddingValues ->
-                    val padding = paddingValues
-
-                    Box(
+                    MainScreen(
+                        mainState = mainState,
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(top = paddingValues.calculateTopPadding())
-                    ){
-                        MainScreen(mainState)
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun BarColor(){
-        val systemUiController = rememberSystemUiController()
-        val color = MaterialTheme.colorScheme.background
-        
-        LaunchedEffect(color){
-            systemUiController.setSystemBarsColor(color)
-        }
-    }
-
-    @Composable
-    private fun MainScreen(
-        mainState: MainState
-    ){
-
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(horizontal = 30.dp)
-            ) {
-                mainState.wordItem?.let{wordItem ->
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Text(
-                        text = wordItem.word,
-                        fontSize = 30.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = wordItem.phonetic,
-                        fontSize = 17.sp,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-            }
-
-            Box(
-                modifier = Modifier
-                    .padding(top = 110.dp)
-                    .fillMaxSize()
-                    .clip(
-                        RoundedCornerShape(
-                            topStart = 50.dp,
-                            topEnd = 50.dp
-                        )
-                    )
-                    .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f))
-            ){
-                if(mainState.isLoading){
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .size(80.dp)
-                            .align(Alignment.Center),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-                else{
-                    mainState.wordItem?.let{wordItem ->
-                        WordResult(wordItem)
-                    }
-                }
-            }
-        }
-
-    }
-
-    @Composable
-    fun WordResult(wordItem: WordItem) {
-        LazyColumn(
-            contentPadding = PaddingValues(vertical = 32.dp),
-
-        ){
-            items(wordItem.meanings.size){index ->
-                Meaning(
-                    meaning = wordItem.meanings[index],
-                    index = index
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-            }
-        }
-    }
-
-    @Composable
-    fun Meaning(meaning: Meaning, index: Int) {
-        Column (
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ){
-
-            Text(
-                text = "${index + 1}. ${meaning.partOfSpeech}",
-                fontSize = 17.sp,
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.primary,
-                                MaterialTheme.colorScheme.primary.copy(0.4f),
-                                Color.Transparent
+                            .padding(
+                                top = paddingValues.calculateTopPadding()
                             )
-                        )
-                    )
-                    .padding(
-                        top = 2.dp,
-                        bottom = 4.dp,
-                        start = 12.dp,
-                        end = 12.dp
-                    )
-            )
-
-
-            if(meaning.definition.definition.isNotEmpty()){
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                ) {
-                    Text(
-                        text = "Definition:",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 19.sp,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Text(
-                        text =meaning.definition.definition,
-                        fontSize = 17.sp,
-                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
             }
-
-            if(meaning.definition.example.isNotEmpty()){
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                ) {
-                    Text(
-                        text = "Example:   ",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 19.sp,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Text(
-                        text =meaning.definition.example,
-                        fontSize = 17.sp,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-            }
-
         }
     }
 }
